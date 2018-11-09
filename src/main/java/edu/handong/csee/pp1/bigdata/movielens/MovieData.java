@@ -6,6 +6,15 @@ import java.util.* ;
 import org.apache.commons.csv.* ;
 import org.apache.commons.configuration.* ;
 
+// class MovieData : Baskets, numRatingsOfMovies, accumulatedRatingsOfMovies, like_threshold, outlier_threshold, config (Data)
+
+
+// void load(FileReader) : user, movie, rating - (parsing) && numRatingsOfMovies, accumulatedRatingsOfMovies - (counting)
+//							rating(data) >=like_threshold --> basket에 담는다
+
+
+// void removeOutliers() : 
+
 public class MovieData 
 {
 	TreeMap<Integer, HashSet<Integer>>

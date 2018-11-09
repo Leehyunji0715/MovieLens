@@ -29,22 +29,22 @@ class Main
 		options.addOption("d", "display", false, "show statistics") ;
 		options.addOption("h", "help", false, "show help message") ;
 
+		
 		// (2) Prepare for a parser for the options
-		//     CommandLineParser class is also from an external library "Apache commons CLI"
+		//     CommandLineParser class is also from an 외부 library "Apache commons CLI"
 		//     parsing options from command line when executing a program.
 		CommandLineParser parser = new DefaultParser() ;
 		CommandLine cmd = null ; // An object of the CommandLine class is actually processing command line options.
 		try {
 			cmd = parser.parse(options, args) ; // parse method parse all options from a command line.
 
-			// parsed options now will be set to corresponding variables to use them in our code.
-			if (cmd.hasOption("d"))
+			if (cmd.hasOption("d"))// display 
 				isToShow = true ;
-			if (cmd.hasOption("c"))
+			
+			if (cmd.hasOption("c"))// configuration
 				configFilePath = cmd.getOptionValue("c") ;
-
-			// 'h' option generates help messages automatically.
-			if (cmd.hasOption("h")) {
+			
+			if (cmd.hasOption("h")) {// help message
 				HelpFormatter formater = new HelpFormatter() ;
 				formater.printHelp("Usage", options) ;
 				System.exit(0) ; // after showing the help message, terminate the program.
@@ -54,15 +54,16 @@ class Main
 			System.err.println(e) ;
 			System.exit(1) ;
 		}
-
+		
 		// (3) load configurations for a movie recommender like data file paths
 		//     and various settings for the movie recommender
 		config(configFilePath) ;
 		
+		
 		// (4) from loading data files to training a recommender and testing the recommender.
 		try {
 			// (4-1) Preparing file readers for both training and test data files
-			MovieData trainingData = new MovieData(config) ;
+			MovieData trainingData = new MovieData(config) ; // data
 			FileReader fileReaderForTrainingData = new FileReader(config.getString("data.training")) ;
 			FileReader fileReaderForTestData =  new FileReader(config.getString("data.testing")) ;
 
@@ -85,7 +86,8 @@ class Main
 			// (4-5) Training a recommender based on the configuration
 			Recommender recommender = new Recommender(config) ;
 			recommender.train(trainingData) ;
-
+			
+			//System.out.println("train");
 			// (4-6) test recommender on the test data to check its prediction performance.
 			test(fileReaderForTestData, recommender) ;
 		}
@@ -127,7 +129,7 @@ class Main
 
 		for (CSVRecord r : CSVFormat.newFormat(',').withFirstRecordAsHeader().parse(fileReader)) {
 			Integer user = Integer.parseInt(r.get(0)) ;
-			Integer movie = Integer.parseInt(r.get(1)) ;
+			Integer movie = Integer.parseInt(r.get(1)) ; 
 			Double rating = Double.parseDouble(r.get(2)) ;
 			String type = r.get(3) ;
 

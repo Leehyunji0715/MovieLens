@@ -3,22 +3,26 @@ package edu.handong.csee.pp1.bigdata.movielens ;
 import java.util.* ;
 import com.google.common.collect.* ;
 import org.apache.commons.configuration.* ;
+import org.apache.commons.math3.stat.Frequency;
 
 public class Recommender
 {
 	TreeMap<Integer, Integer> countForAllItemsetsWithSize1 = new TreeMap<Integer, Integer>() ; // first item, second count
 	TreeMap<FrequentItemsetSize2, Integer> countForAllItemsetsWithSize2 = new TreeMap<FrequentItemsetSize2, Integer>() ; // first item, second count
 	
-	// Frequent itemsets with size 1. Key is movie id and value is the number baskets (frequency) for the movie
+	// Frequent itemsets with size 1.
+	// Key is movie id and value is the number baskets (frequency) for the movie
 	// all itemsets in this map stisfies the minimum support.
 	TreeMap<Integer, Integer> freqItemsetsWithSize1 = new TreeMap<Integer, Integer>() ; 
 	
-	// Frequent itemsets with size 2. Key is two movie ids (set) and value is the number baskets (frequency) for the movie
+	// Frequent itemsets with size 2. 
+	//Key is two movie ids (set) and value is the number baskets (frequency) for the movie
 	// all itemsets in this map stisfies the minimum support.
 	TreeMap<FrequentItemsetSize2, Integer> 
 	freqItemsetsWithSize2 = new TreeMap<FrequentItemsetSize2, Integer>() ; 
 	
-	// Frequent itemsets with size 3. Key is three movie ids (set) and value is the number baskets (frequency) for the movie
+	// Frequent itemsets with size 3. 
+	// Key is three movie ids (set) and value is the number baskets (frequency) for the movie
 	// all itemsets in this map stisfies the minimum support.
 	TreeMap<FrequentItemsetSize3, Integer> 
 	freqItemsetsWithSize3 = new TreeMap<FrequentItemsetSize3, Integer>() ; 
@@ -54,6 +58,7 @@ public class Recommender
 			computeFreqItemsetsWithSize2(aBasket) ; // i.e. association rules with size 2
 			computeFreqItemsetsWithSize3(aBasket) ; // i.e., association rules with size 3
 			// Optional TODO: can you do this for Size K???
+			//System.out.println("a bascket"+aBasket.size());
 		}
 	}
 
@@ -65,7 +70,8 @@ public class Recommender
 
 	private void computeFreqItemsetsWithSize1(HashSet<Integer> aBasket) {
 		
-		for (Integer item : aBasket) {
+		for (Integer item : aBasket) { 
+			/* Baskets : UserID -> Set<MovieId> */
 			Integer count = countForAllItemsetsWithSize1.get(item) ;
 			if (count == null)
 				count = 1 ;
@@ -97,9 +103,8 @@ public class Recommender
 			
 			// Sets.combinations is a public method from a google's common collection package.
 			// this method returns all combinations of elements of a specific size (the second parameter).
-			// for example, when we have the first parameter value {1,2,3} and the value of the second parameter '2',
-			// it returns all subsets from the combinations with the given size {{1,2},{1,3},{2,3}}.
-			// Note that the order of items mat not be ordered by item ids but the order is sorted when ItemsetWithSize2 is instantiated.
+			// Note that the order of items mat not be ordered by item ids but the order is sorted 
+			// when ItemsetWithSize2 is instantiated.
 			for (Set<Integer> aSubsetWithTwoItems : Sets.combinations(aBasket, 2)) {
 				Integer count = countForAllItemsetsWithSize2.get(new FrequentItemsetSize2(aSubsetWithTwoItems)) ;
 				if (count == null) 
@@ -135,9 +140,10 @@ public class Recommender
 		if (aBasket.size() >= 3) {
 			// Sets.combinations is a public method from a google's common collection package.
 			// this method returns all combinations of elements of a specific size (the second parameter).
-			// for example, when we have the first parameter value {1,2,3,4} and the value of the second parameter '2',
-			// it returns all subsets from the combinations with the given size {{1,2,3},{1,2,4},{1,3,4},{2,3,4}}.
+			
 			// Note that the order of items mat not be ordered by item ids but the order is sorted when ItemsetWithSize3 is instantiated.
+			
+			
 			for (Set<Integer> aSubsetWithThreeItems : Sets.combinations(aBasket, 3)) {
 				Integer count = freqItemsetsWithSize3.get(new FrequentItemsetSize3(aSubsetWithThreeItems));
 				if (count == null) 
@@ -149,14 +155,47 @@ public class Recommender
 			}
 		}
 	}
-
-	private int predictPair(HashSet<Integer> anItemset, Integer j) {
+	
+	
+	private int predictPair(HashSet<Integer> anItemset, Integer j) {//associate rule i -> j
 		/* TODO: implement this method */
+		double confidence = 0;
+		// anItemset : Union set of movie set
+		// only consider the case whose itemset size is >=1 since this method deals with {movie 1} -> {movie 2} rules
+		if (anItemset.size() < 1)
+			return 0 ;
 		
-		// Compute support, confidence, or lift. Based on their threshold, decide how to predict. Return 1 when metrics are satisfied by threshold, otherwise 0.
+
+		for ( Integer p : anItemset) {
+
+			// the number baskets for I
+			Integer numBasketsForI = freqItemsetsWithSize1.get(p);
+			if (numBasketsForI == null)
+				continue ;
+			
+			
+			FrequentItemsetSize2 item = new FrequentItemsetSize2(p,j) ;	
+			Integer numBasketsForIUnionj = freqItemsetsWithSize2.get(item) ; 
+			
+			
+			// All item sets in freqItemsetsWithSize2 satisfy minimum support when the are computed.
+			if (numBasketsForIUnionj == null)
+				continue ;
+
+			
+			// compute confidence: The confidence of the rule I -> j is the ratio of the number of baskets
+			// for I U {j} and the number of baskets for I.
+			confidence = (double) numBasketsForIUnionj / numBasketsForI;
+			System.out.println("item"+anItemset.hashCode()+"\nconfidence : "+confidence+" \n ");
+			//"anItemset"+anItemset+
+		}
+	
+		// Compute support, confidence, or lift. 
+		// Based on their threshold, decide how to predict. Return 1 when metrics are satisfied by threshold, otherwise 0.
 		return 0 ;
 	}
 
+	
 	private int predictTriple(HashSet<Integer> anItemset, Integer j) { // association rule anItemset (I) -> j
 		
 		// only consider the case whose itemset size is >=2 since this method deals with {movie 1, movie 2} -> {movie 3} rules
@@ -178,11 +217,14 @@ public class Recommender
 			TreeSet<Integer> assocRule = new TreeSet<Integer>(p) ;
 			assocRule.add(j) ;
 			FrequentItemsetSize3 item = new FrequentItemsetSize3(assocRule) ;	
-			Integer numBasketsForIUnionj = freqItemsetsWithSize3.get(item) ; // All itemsets in freqItemsetsWithSize3 satisfy minimum support when the are computed.
+			Integer numBasketsForIUnionj = freqItemsetsWithSize3.get(item) ; 
+			// All itemsets in freqItemsetsWithSize3 satisfy minimum support when the are computed.
+			
 			if (numBasketsForIUnionj == null)
 				continue ;
 			
-			// compute confidence: The confidence of the rule I -> j is the ratio of the number of baskets for I U {j} and the number of baskets for I.
+			// compute confidence: 
+			//The confidence of the rule I -> j is the ratio of the number of baskets for I U {j} and the number of baskets for I.
 			double confidence = (double) numBasketsForIUnionj / numBasketsForI;
 		
 			if (confidence >= confidence_threshold_rulesize_3) 
@@ -243,17 +285,41 @@ class FrequentItemsetSize2 implements Comparable
 @SuppressWarnings("rawtypes")
 class FrequentItemsetSize3 implements Comparable 
 {
-	int [] items ;
+	int [] items = new int[3] ;
 
-	FrequentItemsetSize3(Set<Integer> s) {
-		/* TODO: implement this method */
-		
+	FrequentItemsetSize3(Set<Integer> s) {// s : support
+		// order item ids!
+		Integer [] elem = s.toArray(new Integer[3]) ;
+		Arrays.sort(elem);
 		// values in s must be sorted and save into items array
+		this.items[0] = elem[0];
+		this.items[1] = elem[1];
+		this.items[2] = elem[2];
 	}
 
 	@Override
 	public int compareTo(Object obj) {  // this method is used for sorting when using TreeMap
 		/* TODO: implement this method */
-		return 0 ;
+		//FrequentItemSize2 참고함 
+		FrequentItemsetSize3 p = (FrequentItemsetSize3) obj ;
+		
+		if (this.items[0] < p.items[0]) 
+			return -1 ;
+		if (this.items[0] > p.items[0])
+			return 1 ;
+		
+		
+		if (this.items[1] < p.items[1]) 
+			return -1 ;
+		if (this.items[1] > p.items[1])
+			return 1 ;
+		
+
+		return (this.items[2] - p.items[2]) ;
 	}
 }
+
+
+
+
+
