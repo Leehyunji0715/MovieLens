@@ -50,7 +50,6 @@ public class Recommender
 		TreeMap<Integer, HashSet<Integer>> 
 		baskets = data.getBaskets() ;
 		/* Baskets : UserID -> Set<MovieId> */
-
 		for (Integer user : baskets.keySet()) {
 			HashSet<Integer> aBasket = baskets.get(user) ;
 
@@ -58,7 +57,6 @@ public class Recommender
 			computeFreqItemsetsWithSize2(aBasket) ; // i.e. association rules with size 2
 			computeFreqItemsetsWithSize3(aBasket) ; // i.e., association rules with size 3
 			// Optional TODO: can you do this for Size K???
-			//System.out.println("a bascket"+aBasket.size());
 		}
 	}
 
@@ -186,8 +184,6 @@ public class Recommender
 			// compute confidence: The confidence of the rule I -> j is the ratio of the number of baskets
 			// for I U {j} and the number of baskets for I.
 			confidence = (double) numBasketsForIUnionj / numBasketsForI;
-			System.out.println("item"+anItemset.hashCode()+"\nconfidence : "+confidence+" \n ");
-			//"anItemset"+anItemset+
 		}
 	
 		// Compute support, confidence, or lift. 
@@ -223,12 +219,16 @@ public class Recommender
 			if (numBasketsForIUnionj == null)
 				continue ;
 			
-			// compute confidence: 
-			//The confidence of the rule I -> j is the ratio of the number of baskets for I U {j} and the number of baskets for I.
+			
 			double confidence = (double) numBasketsForIUnionj / numBasketsForI;
 		
-			if (confidence >= confidence_threshold_rulesize_3) 
+			//System.out.println("confidence : "+confidence);
+			
+			if (confidence >= confidence_threshold_rulesize_3) { 
+				//System.out.println("movie : " + assocRule);
+				System.out.println("confidence : "+confidence);
 				evidence++ ;
+			}
 		}
 
 		if (evidence >= min_evidence_3) 
